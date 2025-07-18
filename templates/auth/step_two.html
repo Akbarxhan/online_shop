@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Takoy Do‘kon - OTP Verification</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-image: url('https://images.unsplash.com/photo-1556740738-b6a63e27c4df?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        .form-container {
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 2px solid #ffeb3b;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        .otp-input {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 1.5rem;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid #ffeb3b;
+            border-radius: 8px;
+            transition: border-color 0.3s;
+        }
+        .otp-input:focus {
+            border-color: #f97316;
+            outline: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center text-white font-sans">
+    <div class="form-container w-full max-w-md p-8">
+        <h2 class="text-4xl font-extrabold mb-4 text-center text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-500">Verification</h2>
+        <h3 class="text-2xl font-semibold mb-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-orange-300 to-red-500">SMS kodni kiriting</h3>
+        <p class="text-center text-gray-300 mb-6">Kodni <span id="phoneDisplay">+998 90 123 45 67</span> raqamiga yubordik {{ request.session.otp }}</p>
+
+        <form id="otpForm" class="space-y-6" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="flex justify-center gap-4">
+                <input type="text" maxlength="1" class="otp-input" required autofocus>
+                <input type="text" maxlength="1" class="otp-input" required>
+                <input type="text" maxlength="1" class="otp-input" required>
+                <input type="text" maxlength="1" class="otp-input" required>
+            </div>
+            <div class="text-center">
+                <p id="timer" class="text-gray-300">Kodni qayta yuborish: <span id="countdown">30</span> soniya</p>
+                <button id="resendBtn" type="button" class="text-yellow-300 hover:underline hidden" disabled>Kodni qayta yuborish</button>
+            </div>
+            <button type="submit" class="w-full bg-blue-500 text-white p-4 rounded-lg hover:bg-blue-600 transition-colors">Tasdiqlash</button>
+            <p class="text-center">Akkauntingiz bormi? <a href="login.html" class="text-yellow-300 hover:underline">Bu yerdan kiring</a></p>
+        </form>
+    </div>
+
+    <script>
+        // OTP input handling
+        const otpInputs = document.querySelectorAll('.otp-input');
+        otpInputs.forEach((input, index) => {
+            input.addEventListener('input', (e) => {
+                if (e.target.value.length === 1 && index < otpInputs.length - 1) {
+                    otpInputs[index + 1].focus();
+                }
+            });
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                    otpInputs[index - 1].focus();
+                }
+            });
+        });
+
+        // Countdown timer for resend OTP
+        let timeLeft = 30;
+        const countdownEl = document.getElementById('countdown');
+        const resendBtn = document.getElementById('resendBtn');
+        const timerEl = document.getElementById('timer');
+
+        const countdown = setInterval(() => {
+            timeLeft--;
+            countdownEl.textContent = timeLeft;
+            if (timeLeft <= 0) {
+                clearInterval(countdown);
+                timerEl.classList.add('hidden');
+                resendBtn.classList.remove('hidden');
+                resendBtn.disabled = false;
+            }
+        }, 1000);
+
+        // Resend OTP
+        resendBtn.addEventListener('click', () => {
+            timeLeft = 30;
+            countdownEl.textContent = timeLeft;
+            timerEl.classList.remove('hidden');
+            resendBtn.classList.add('hidden');
+            resendBtn.disabled = true;
+            // Simulate sending new OTP (replace with actual API call)
+            alert('Yangi kod yuborildi!');
+            const newCountdown = setInterval(() => {
+                timeLeft--;
+                countdownEl.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(newCountdown);
+                    timerEl.classList.add('hidden');
+                    resendBtn.classList.remove('hidden');
+                    resendBtn.disabled = false;
+                }
+            }, 1000);
+        });
+
+        // Form submission
+        document.getElementById('otpForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const otp = Array.from(otpInputs).map(input => input.value).join('');
+            if (otp.length === 4) {
+                // Simulate OTP verification (replace with actual API call)
+                alert(`OTP tasdiqlandi: ${otp}`);
+                window.location.href = 'dashboard.html'; // Redirect to dashboard or success page
+            } else {
+                alert('Iltimos, to‘liq 4 raqamli kodni kiriting.');
+            }
+        });
+    </script>
+</body>
+</html>
